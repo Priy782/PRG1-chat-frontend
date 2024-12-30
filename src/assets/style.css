@@ -1,0 +1,187 @@
+:root {
+    --background-color: #fff;
+    --border-color: #ccc;
+    --button-color: #007bff;
+    --button-hover: #0056b3;
+    --margin: 10px;
+    --padding: 10px;
+    --primary-color: #007bff;
+    --primary-hover-color: #0056b3;
+    --secondary-color: #e7e7e7;
+    --text-color: #333;
+
+    --breakpoint-lg: 1024px;
+    --breakpoint-md: 768px;
+    --breakpoint-sm: 480px;
+}
+.additional-actions {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.additional-actions button {
+    background: transparent;
+    color: var(--primary-color);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: underline;
+}
+
+/* .additional-actions button:hover {
+    color: var(--primary-hover-color);
+} */
+body {
+    background: var(--background-color);
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.button-container {
+    display: flex;
+    gap: 10px; /* Abstand zwischen Buttons */
+    justify-content: space-between;
+}
+
+button {
+    background: #007bff;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    flex: 1; /* Beide Buttons gleich groß */
+    padding: 10px;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+button[type="button"] {
+    background: #6c757d; /* Andere Farbe für Registrieren-Button */
+}
+
+button[type="button"]:hover {
+    background: #5a6268;
+}
+
+.chat-container {
+    background: var(--secondary-color);
+    border-right: 1px solid var(--border-color); /* Abgrenzung */
+    flex: 0 0 250px; /* Feste Breite von 250px */
+    overflow-y: auto; /* Scrollbar für lange Inhalte */
+    padding: 20px;
+}
+
+.chat-content {
+    display: flex;
+    flex: 1; /* Nimmt den restlichen Platz ein */
+    flex-direction: column; /* Vertikale Anordnung */
+    overflow: hidden;
+}
+
+.chat-messages {
+    background: var(--background-color);
+    border-bottom: 1px solid var(--border-color); /* Abgrenzung zum Eingabefeld */
+    flex: 1; /* Nimmt den verfügbaren Platz ein */
+    overflow-y: auto; /* Scrollbar für Nachrichten */
+    padding: 20px;
+    scroll-behavior: smooth; /* Animiertes Scrollen */
+    overflow-y: auto; /* Scrollbar aktivieren */
+    height: 300px; /* Maximalhöhe für Nachrichtenbereich */
+}
+
+
+.chat-room {
+    display: flex;
+    height: 100vh; /* Gesamte Fensterhöhe */
+    overflow: hidden;
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
+}
+
+input {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: block;
+    margin-bottom: 10px;
+    padding: 10px;
+    width: 100%;
+}
+
+.login, .chat, .register {
+    background: var(--background-color);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: auto;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.message {
+    margin-bottom: 15px;
+}
+
+.message .timestamp {
+    color: #aaa;
+    display: block;
+    font-size: 12px;
+}
+
+.message-form {
+    background: var(--background-color);
+    border-top: 1px solid #ccc; /* Abgrenzung */
+    display: flex;
+    padding: 10px;
+}
+
+.message-form button {
+    background: var(--button-color);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    flex: 0 0 20%;
+    padding: 10px 20px;
+}
+
+.message-form button:hover {
+    background: var(--button-hover);
+}
+
+.message-form input {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex: 1; /* Eingabefeld nimmt den verfügbaren Platz ein */
+    margin-right: 10px; /* Abstand zum Button */
+    padding: 10px;
+}
+
+.messages {
+    background: var(--background-color);
+    border: 1px solid #ccc;
+    height: 300px;
+    margin-bottom: 10px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.status-dot {
+    border-radius: 50%; /* Punkt wird rund */
+    display: inline-block;
+    height: 10px;
+    margin-left: 10px;
+    width: 10px;
+}
+
+.status-dot.offline {
+    background-color: #800000;
+}
+
+.status-dot.online {
+    background-color: #008000;
+}
