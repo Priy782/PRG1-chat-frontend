@@ -1,39 +1,51 @@
 <template>
     <div class="chat-room">
-        <!-- Linke Spalte -->
-        <div class="chat-container">
-            <h2>Benutzer</h2>
-            <ul class="user-list">
-                <li v-for="user in users" :key="user.username" :class="user.status">
-                    <span>{{ user.username }}</span>
-                    <!-- <span class="status"> ({{ user.status }})</span> -->
-                    <span :class="['status-dot', user.status]"></span>
-                </li>
-            </ul>
-        </div>
+        <!-- Header -->
+        <header class="chat-header">
+            <h1>Blueberry Chat</h1>
+            <div class="header-buttons">
+                <button @click="goToProfile">Profil</button>
+                <button @click="logout">Logout</button>
+            </div>
+        </header>
 
-        <!-- Rechte Spalte -->
-        <div class="chat-content">
-            <!-- Nachrichtenbereich -->
-            <div class="chat-messages" ref="messagesContainer">
-                <div v-for="message in messages" :key="message._id" class="message">
-                    <strong>{{ message.username }}</strong>: {{ message.message }}
-                    <span class="timestamp">{{ formatTimestamp(message.createdAt) }}</span>
-                </div>
+        <!-- Chat-Inhalt -->
+        <div class="chat-content-wrapper">
+            <!-- Linke Spalte -->
+            <div class="chat-container">
+                <h2>Benutzer</h2>
+                <ul class="user-list">
+                    <li v-for="user in users" :key="user.username" :class="user.status">
+                        <span>{{ user.username }}</span>
+                        <span :class="['status-dot', user.status]"></span>
+                    </li>
+                </ul>
             </div>
 
-            <!-- Eingabefeld -->
-            <form class="message-form" @submit.prevent="sendMessage">
-                <input
-                    v-model="newMessage"
-                    type="text"
-                    placeholder="Nachricht eingeben..."
-                />
-                <button type="submit">Senden</button>
-            </form>
+            <!-- Rechte Spalte -->
+            <div class="chat-content">
+                <!-- Nachrichtenbereich -->
+                <div class="chat-messages" ref="messagesContainer">
+                    <div v-for="message in messages" :key="message._id" class="message">
+                        <strong>{{ message.username }}</strong>: {{ message.message }}
+                        <span class="timestamp">{{ formatTimestamp(message.createdAt) }}</span>
+                    </div>
+                </div>
+
+                <!-- Eingabefeld -->
+                <form class="message-form" @submit.prevent="sendMessage">
+                    <input
+                        v-model="newMessage"
+                        type="text"
+                        placeholder="Nachricht eingeben..."
+                    />
+                    <button type="submit">Senden</button>
+                </form>
+            </div>
         </div>
     </div>
 </template>
+
 
 <script>
 import axios from "axios";
@@ -127,6 +139,15 @@ export default {
         // Timestamp formatieren
         formatTimestamp(timestamp) {
             return new Date(timestamp).toLocaleString();
+        },
+
+        goToProfile() {
+            this.$router.push("/profile");
+        },
+
+        logout() {
+            localStorage.removeItem("token");
+            this.$router.push("/login");
         },
 
     },
