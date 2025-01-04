@@ -88,7 +88,7 @@ export default {
             try {
                 const token = localStorage.getItem("token");
                 const response = await axios.get(
-                    `http://localhost:3000/api/users/${this.userId}`,
+                    `https://chat.ndum.ch/api/users/${this.userId}`,
                     {
                         headers: { Authorization: `Bearer ${token}` },
                     }
@@ -116,7 +116,7 @@ export default {
 
                 // Benutzer aktualisieren
                 await axios.put(
-                    `http://localhost:3000/api/users/${this.userId}`,
+                    `https://chat.ndum.ch/api/users/${this.userId}`,
                     {
                         username: this.username,
                         password: this.password, // Nur senden, wenn eingegeben

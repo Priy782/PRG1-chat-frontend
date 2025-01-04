@@ -25,7 +25,7 @@ export default {
     methods: {
         async register() {
             try {
-                const response = await axios.post('http://localhost:3000/api/auth/register', {
+                const response = await axios.post('https://chat.ndum.ch/api/auth/register', {
                     username: this.username,
                     password: this.password,
                 });

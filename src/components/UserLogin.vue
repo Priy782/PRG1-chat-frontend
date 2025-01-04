@@ -28,7 +28,7 @@ export default {
     methods: {
         async handleLogin() {
             try {
-                const response = await axios.post("http://localhost:3000/api/auth/login", {
+                const response = await axios.post("https://chat.ndum.ch/api/auth/login", {
                     username: this.username,
                     password: this.password,
                 });

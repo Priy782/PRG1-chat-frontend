@@ -2,7 +2,7 @@
     <div class="chat-room">
         <!-- Header -->
         <header class="chat-header">
-            <h1>Blueberry Chat</h1>
+            <h1>Bluey's Berry Chat</h1>
             <div class="header-buttons">
                 <button @click="goToProfile">Profil</button>
                 <button @click="logout">Logout</button>
@@ -49,7 +49,8 @@
 <script>
 import axios from "axios";
 //import { useExtractUserIdFromToken } from "@/helpers/helpers";
-import { useFetchProfile } from "@/helpers/helpers";
+//import { useFetchProfile } from "@/helpers/helpers";
+const token = localStorage.getItem('token');
 
 export default {
     data() {
@@ -64,59 +65,70 @@ export default {
     },
     
     methods: {
+
         setupWebSocket() {
-            this.socket = new WebSocket('ws://localhost:3000');
+            this.socket = new WebSocket('wss://chat.ndum.ch/api');
             //this.socket.binaryType = 'blob'
 
-            // Verbindung herstellen
             this.socket.onopen = () => {
                 console.log("WebSocket verbunden.");
                 console.log("WebSocket-Status:", this.socket.readyState);
             };
             this.socket.onerror = (error) => {
                 console.error("WebSocket-Fehler:", error);
-                console.log("WebSocket-Status:", this.socket);
+                console.log("WebSocket-Status:", this.socket.readyState);
             };
 
-            this.socket.onmessage = (event) => {
-                console.log("Message from server ", event.data);
-                this.messages.push(event.data);
-                this.$nextTick(() => this.scrollToBottom());
+            this.socket.onmessage = (event) => {            
+                try {                
+                    const message = JSON.parse(event.data);                
+                if (message.type === "new_message") {                
+                    this.messages.push(message.data);                
+                    this.$nextTick(() => this.scrollToBottom());                
+                }            
+            } 
+            catch (error) {  
+                          console.error("Fehler beim Parsen der Nachricht:", error);         
+                          }
             };
+            this.socket.onclose = () => {
+                console.log("WebSocket connection closed.");
+               // setTimeout(() => initializeWebSocket({ onMessageReceived, onUserStatusChanged }), 5000);
+            };
+
         },
         async sendMessage() {
-            this.userProfile = await useFetchProfile();
-            //console.log(this.userProfile.data);
-            this.currentUserId = this.userProfile.data.username;
-
-            if (this.currentUserId) {
-                try {
-                   // Erstellen des neuen Nachrichtenobjekts
-                    const message = {
-                        type: "new_message",
-                        data: {
-                            _id: "",
-                            username: this.currentUserId,
-                            message: this.newMessage,
-                            createdAt: new Date().toISOString(),
-                            updatedAt: new Date().toISOString(),
-                            __v: 0 
-                        }
-                    };
-
-                    // Nachricht über den WebSocket senden JSON.stringify(message)
-                    this.socket.send(message);
-                    console.log('Nachricht gesendet:', message);
-
-                    // Eingabefeld leeren
-                    this.newMessage = "";
-                } catch (error) {
-                    console.error("Fehler beim Dekodieren des Tokens:", error);
+            if (this.newMessage.trim() === "") return;
+            try {
+                const { response } = await axios.post('https://chat.ndum.ch/api/messages', {
+                    username: this.currentUserId,
+                    message: this.newMessage,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}` 
+                    }
                 }
-            } else {
-                console.error("Kein Token gefunden. Benutzer ist nicht authentifiziert.");
+                )
+                if (response != "OK") {
+                    console.log('error with api post');
+                }
+                else {
+                    console.log('response ok');
+                }
+                
+                this.newMessage = ""; // Eingabefeld leeren
+
+                 // Nach dem Hinzufügen der Nachricht automatisch scrollen
+                this.$nextTick(() => {
+                    this.scrollToBottom();
+                });
+            } catch (error) {
+                console.error("Fehler beim Senden der Nachricht:", error);
             }
-        },      
+        },
+      
         scrollToBottom() {
             const container = this.$refs.messagesContainer;
             if (container) {
@@ -127,7 +139,10 @@ export default {
         //Nachrichten laden
         async loadMessages() {
             try {
-                const response = await axios.get("http://localhost:3000/api/messages");
+                const response = await axios.get('https://chat.ndum.ch/api/messages',
+                {
+                    headers: { Authorization: `Bearer ${token}` } 
+                })
                 this.messages = response.data;
                 this.$nextTick(() => {
                     this.scrollToBottom();
@@ -137,9 +152,10 @@ export default {
             }
         },
 
+        //lade die vorhandenen User, und setze den Status an Hand der letzten Aktivität (letzte Nachricht gesendet)
         async loadUsers() {
             try {
-                const userResponse = await axios.get("http://localhost:3000/api/users");
+                const userResponse = await axios.get("https://chat.ndum.ch/api/users");
                 const users = userResponse.data;
 
                 const now = Date.now();
