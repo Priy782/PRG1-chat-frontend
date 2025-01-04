@@ -46,9 +46,10 @@
     </div>
 </template>
 
-
 <script>
 import axios from "axios";
+//import { useExtractUserIdFromToken } from "@/helpers/helpers";
+import { useFetchProfile } from "@/helpers/helpers";
 
 export default {
     data() {
@@ -56,87 +57,114 @@ export default {
             users: [], // Liste aller Benutzer
             messages: [], // Liste aller Nachrichten
             newMessage: "", // Aktuelle Nachricht
+            socket: null, // WebSocket-Objekt
+            userProfile: null, //Userprofil-Objekt
+            currentUserId: "",
         };
     },
+    
     methods: {
+        setupWebSocket() {
+            this.socket = new WebSocket('ws://localhost:3000');
+            //this.socket.binaryType = 'blob'
+
+            // Verbindung herstellen
+            this.socket.onopen = () => {
+                console.log("WebSocket verbunden.");
+                console.log("WebSocket-Status:", this.socket.readyState);
+            };
+            this.socket.onerror = (error) => {
+                console.error("WebSocket-Fehler:", error);
+                console.log("WebSocket-Status:", this.socket);
+            };
+
+            this.socket.onmessage = (event) => {
+                console.log("Message from server ", event.data);
+                this.messages.push(event.data);
+                this.$nextTick(() => this.scrollToBottom());
+            };
+        },
+        async sendMessage() {
+            this.userProfile = await useFetchProfile();
+            //console.log(this.userProfile.data);
+            this.currentUserId = this.userProfile.data.username;
+
+            if (this.currentUserId) {
+                try {
+                   // Erstellen des neuen Nachrichtenobjekts
+                    const message = {
+                        type: "new_message",
+                        data: {
+                            _id: "",
+                            username: this.currentUserId,
+                            message: this.newMessage,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            __v: 0 
+                        }
+                    };
+
+                    // Nachricht über den WebSocket senden JSON.stringify(message)
+                    this.socket.send(message);
+                    console.log('Nachricht gesendet:', message);
+
+                    // Eingabefeld leeren
+                    this.newMessage = "";
+                } catch (error) {
+                    console.error("Fehler beim Dekodieren des Tokens:", error);
+                }
+            } else {
+                console.error("Kein Token gefunden. Benutzer ist nicht authentifiziert.");
+            }
+        },      
         scrollToBottom() {
-        const container = this.$refs.messagesContainer;
+            const container = this.$refs.messagesContainer;
             if (container) {
                 container.scrollTop = container.scrollHeight;
             }
         },
 
-        // Nachrichten laden
+        //Nachrichten laden
         async loadMessages() {
             try {
                 const response = await axios.get("http://localhost:3000/api/messages");
                 this.messages = response.data;
-                console.log("Nachrichten:", response.data); // Daten in der Konsole anzeigen
-                // Nach dem Laden der Nachrichten automatisch scrollen
                 this.$nextTick(() => {
-                        this.scrollToBottom();
-                    });
+                    this.scrollToBottom();
+                });
             } catch (error) {
                 console.error("Fehler beim Laden der Nachrichten:", error);
             }
         },
 
-
         async loadUsers() {
-         try {
-            // 1. Benutzerliste von der API abrufen
-            const userResponse = await axios.get('http://localhost:3000/api/users');
-            const users = userResponse.data;
-
-            // 2. Nachrichten von der API abrufen
-            const messageResponse = await axios.get('http://localhost:3000/api/messages');
-            const messages = messageResponse.data;
-
-            const now = Date.now();
-            const userStatusMap = {};
-
-            // 3. Benutzer mit Zeitstempeln aus Nachrichten füllen
-            messages.forEach(message => {
-                const { username, createdAt } = message;
-                const messageTime = new Date(createdAt).getTime();
-
-                // Speichere den neuesten Zeitstempel für jeden Benutzer
-                if (!userStatusMap[username] || userStatusMap[username] < messageTime) {
-                    userStatusMap[username] = messageTime;
-                }
-            });
-
-            // 4. Alle Benutzer zusammenstellen, auch ohne Nachrichten
-            this.users = users.map(user => {
-                const lastActive = userStatusMap[user.username] || 0; // Falls keine Nachricht gesendet wurde, Zeitstempel = 0
-                const status = now - lastActive < 60 * 60 * 1000 ? 'online' : 'offline'; // Online innerhalb der letzten Stunde
-                return { username: user.username, lastActive, status };
-            }); 
-            } catch (error) {
-                console.error('Fehler beim Laden der Benutzer oder Nachrichten:', error);
-            }
-        },
-
-        // Nachricht senden
-        async sendMessage() {
-            if (this.newMessage.trim() === "") return;
-
             try {
-                const response = await axios.post("http://localhost:3000/api/messages", {
-                    message: this.newMessage,
+                const userResponse = await axios.get("http://localhost:3000/api/users");
+                const users = userResponse.data;
+
+                const now = Date.now();
+                const userStatusMap = {};
+
+                this.messages.forEach((message) => {
+                    const { username, createdAt } = message;
+                    const messageTime = new Date(createdAt).getTime();
+
+                    if (!userStatusMap[username] || userStatusMap[username] < messageTime) {
+                        userStatusMap[username] = messageTime;
+                    }
                 });
-                this.messages.push(response.data); // Nachricht zur Liste hinzufügen
-                this.newMessage = ""; // Eingabefeld leeren
-                 // Nach dem Hinzufügen der Nachricht automatisch scrollen
-                this.$nextTick(() => {
-                    this.scrollToBottom();
+
+                this.users = users.map((user) => {
+                    const lastActive = userStatusMap[user.username] || 0;
+                    const status =
+                        now - lastActive < 60 * 60 * 1000 ? "online" : "offline";
+                    return { username: user.username, lastActive, status };
                 });
             } catch (error) {
-                console.error("Fehler beim Senden der Nachricht:", error);
+                console.error("Fehler beim Laden der Benutzer:", error);
             }
         },
 
-        // Timestamp formatieren
         formatTimestamp(timestamp) {
             return new Date(timestamp).toLocaleString();
         },
@@ -147,28 +175,24 @@ export default {
 
         logout() {
             localStorage.removeItem("token");
+            this.socket.close();
             this.$router.push("/login");
         },
-
     },
     mounted() {
-        // Daten laden
+        this.setupWebSocket();
         this.loadMessages();
         this.loadUsers();
-        // Automatisch nach unten scrollen, wenn die Komponente geladen wird
-        this.$nextTick(() => {
-            this.scrollToBottom();
-        });
 
-        // Polling für neue Daten alle 10 Sekunden
-        setInterval(() => {
-            this.loadMessages();
-            this.loadUsers();
-        }, 10000);
+    },
+    beforeUnmount() {
+        if (this.socket) {
+            this.socket.close(); 
+        }
     },
 };
 </script>
 
 <style>
-/* Keine Verwendung von scoped hier */
+/* Bestehende Styles */
 </style>

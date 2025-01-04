@@ -39,6 +39,7 @@
 
 <script>
 import axios from "axios";
+//import { useExtractUserIdFromToken } from "@/helpers/helpers";
 
 export default {
     data() {
@@ -66,12 +67,6 @@ export default {
                 // Token-Dekodierung
                 const payload = JSON.parse(atob(token.split(".")[1]));
 
-                //debug
-                //console.log(localStorage.getItem('token'));
-                //console.log("debug:");
-                //console.log(payload);
-                //debug ende
-
                 return payload.userId; 
             } 
             catch (error) {
@@ -84,7 +79,7 @@ export default {
 
         // Profilinformationen abrufen
         async fetchProfile() {
-            this.userId = this.extractUserIdFromToken(); // Benutzer-ID aus Token extrahieren
+            this.userId = this.extractUserIdFromToken();
             if (!this.userId) {
             console.log("no user id: " + this.userId);
             return;
@@ -99,7 +94,6 @@ export default {
                     }
                 );
 
-                //console.log("response: " + response);
                 // Benutzername laden
                 this.currentUsername = response.data.username; // Aktueller Benutzername
                 this.username = response.data.username; // Standardwert für neuen Benutzernamen
