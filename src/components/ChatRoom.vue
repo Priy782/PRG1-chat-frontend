@@ -20,6 +20,7 @@
                         <span :class="['status-dot', user.status]"></span>
                     </li>
                 </ul>
+                <p style="font-size:10px;">*Reload the browser page to update the user status (online/offline)</p>
             </div>
 
             <!-- Rechte Spalte -->
@@ -48,8 +49,6 @@
 
 <script>
 import axios from "axios";
-//import { useExtractUserIdFromToken } from "@/helpers/helpers";
-//import { useFetchProfile } from "@/helpers/helpers";
 const token = localStorage.getItem('token');
 
 export default {
@@ -85,7 +84,10 @@ export default {
                 if (message.type === "new_message") {                
                     this.messages.push(message.data);                
                     this.$nextTick(() => this.scrollToBottom());                
-                }            
+                }
+                if (message.type === "new_login") {
+                    this.users.push(message.data);
+                }          
             } 
             catch (error) {  
                           console.error("Fehler beim Parsen der Nachricht:", error);         
@@ -93,7 +95,6 @@ export default {
             };
             this.socket.onclose = () => {
                 console.log("WebSocket connection closed.");
-               // setTimeout(() => initializeWebSocket({ onMessageReceived, onUserStatusChanged }), 5000);
             };
 
         },
@@ -105,17 +106,14 @@ export default {
                     message: this.newMessage,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
-                }, {
+                }, 
+                {
                     headers: {
                         Authorization: `Bearer ${token}` 
                     }
-                }
-                )
-                if (response != "OK") {
-                    console.log('error with api post');
-                }
-                else {
-                    console.log('response ok');
+                })
+                if (!response) {
+                    console.log("Fehler beim Senden der Nachricht");
                 }
                 
                 this.newMessage = ""; // Eingabefeld leeren
@@ -136,7 +134,7 @@ export default {
             }
         },
 
-        //Nachrichten laden
+        //initiales Laden der Nachrichten
         async loadMessages() {
             try {
                 const response = await axios.get('https://chat.ndum.ch/api/messages',
@@ -152,7 +150,8 @@ export default {
             }
         },
 
-        //lade die vorhandenen User, und setze den Status an Hand der letzten Aktivität (letzte Nachricht gesendet)
+        //lade die vorhandenen User, und setze den Status an Hand der letzten Aktivität 
+        // (letzte Nachricht gesendet kleiner als 10 minuten)
         async loadUsers() {
             try {
                 const userResponse = await axios.get("https://chat.ndum.ch/api/users");
@@ -173,7 +172,7 @@ export default {
                 this.users = users.map((user) => {
                     const lastActive = userStatusMap[user.username] || 0;
                     const status =
-                        now - lastActive < 60 * 60 * 1000 ? "online" : "offline";
+                        now - lastActive < 10 * 60 * 1000 ? "online" : "offline";
                     return { username: user.username, lastActive, status };
                 });
             } catch (error) {
