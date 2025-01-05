@@ -2,6 +2,7 @@
     <div class="chat-room">
         <!-- Header -->
         <header class="chat-header">
+            <img class="logoimage" src="../assets/logo.png" alt="berrylogo">
             <h1>Bluey's Berry Chat</h1>
             <div class="header-buttons">
                 <button @click="goToProfile">Profil</button>
@@ -28,8 +29,11 @@
                 <!-- Nachrichtenbereich -->
                 <div class="chat-messages" ref="messagesContainer">
                     <div v-for="message in messages" :key="message._id" class="message">
-                        <strong>{{ message.username }}</strong>: {{ message.message }}
-                        <span class="timestamp">{{ formatTimestamp(message.createdAt) }}</span>
+                        <div class="message-bubble">
+                            <strong class="message-username">{{ message.username }}</strong>
+                            <p class="message-text">{{ message.message }}</p>
+                            <span class="timestamp">{{ formatTimestamp(message.createdAt) }}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -40,7 +44,7 @@
                         type="text"
                         placeholder="Nachricht eingeben..."
                     />
-                    <button type="submit">Senden</button>
+                    <button type="submit"><img src="../assets/sendbutton.png" /></button>
                 </form>
             </div>
         </div>

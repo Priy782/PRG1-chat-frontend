@@ -126,7 +126,7 @@ export default {
 
                 this.successMessage = "Profil erfolgreich aktualisiert!";
                 this.errorMessage = "";
-                this.password = ""; // Passwortfeld leeren
+                this.password = ""; 
                 this.currentUsername = this.username; // Aktualisiere angezeigten Benutzernamen
             } catch (error) {
                 console.error("Fehler beim Aktualisieren des Profils:", error);

@@ -1,5 +1,6 @@
 <template>
     <div class="login">
+        <img class="logoimage" src="../assets/logo.png" alt="berrylogo">
         <h1>Login</h1>
         <form @submit.prevent="handleLogin">
             <input v-model="username" type="text" placeholder="Benutzername" />
@@ -10,6 +11,13 @@
             </div>
         </form>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+        <p style="text-align:left; font-size:10px;">Anleitung:
+            <ol>
+                <li>Registrieren</li>
+                <li>Anmelden</li>
+                <li>Loschatten</li>
+            </ol>
+        </p>
     </div>
 </template>
 
