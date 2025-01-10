@@ -7,7 +7,7 @@
             <button type="submit">Registrieren</button>
         </form>
         <div class="additional-actions">
-            <button @click="goToLogin">Zurück zur Anmeldung</button>
+            <button @click="goToLogin">Zur&uuml;ck zur Anmeldung</button>
         </div>
     </div>
 </template>

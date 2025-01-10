@@ -18,7 +18,7 @@
                 <ul class="user-list">
                     <li v-for="user in users" :key="user.username" :class="user.status">
                         <span>{{ user.username }}</span>
-                        <span :class="['status-dot', user.status]"></span>
+                        <span :class="['status-dot', user.status ]"></span>
                     </li>
                 </ul>
                 <p style="font-size:10px;">*Reload the browser page to update the user status (online/offline)</p>
@@ -27,9 +27,19 @@
             <!-- Rechte Spalte -->
             <div class="chat-content">
                 <!-- Nachrichtenbereich -->
-                <div class="chat-messages" ref="messagesContainer">
+                <!-- <div class="chat-messages" ref="messagesContainer">
                     <div v-for="message in messages" :key="message._id" class="message">
                         <div class="message-bubble">
+                            <strong class="message-username">{{ message.username }}</strong>
+                            <p class="message-text">{{ message.message }}</p>
+                            <span class="timestamp">{{ formatTimestamp(message.createdAt) }}</span>
+                        </div>
+                    </div>
+                </div> -->
+                <!-- Messages dynamisch an Hand vom Ersteller klassifizieren -->
+                <div class="chat-messages" ref="messagesContainer">
+                    <div v-for="message in messages" :key="message._id" class="message">
+                        <div class="message-bubble" :class="{ 'own-message-bubble': message.username === username }">
                             <strong class="message-username">{{ message.username }}</strong>
                             <p class="message-text">{{ message.message }}</p>
                             <span class="timestamp">{{ formatTimestamp(message.createdAt) }}</span>
@@ -64,6 +74,7 @@ export default {
             socket: null, // WebSocket-Objekt
             userProfile: null, //Userprofil-Objekt
             currentUserId: "",
+            username: JSON.parse(sessionStorage.getItem('username')),
         };
     },
     
@@ -91,7 +102,10 @@ export default {
                 }
                 if (message.type === "new_login") {
                     this.users.push(message.data);
-                }          
+
+                }
+                this.loadUsers();
+                this.loadMessages();          
             } 
             catch (error) {  
                           console.error("Fehler beim Parsen der Nachricht:", error);         
@@ -155,7 +169,7 @@ export default {
         },
 
         //lade die vorhandenen User, und setze den Status an Hand der letzten Aktivität 
-        // (letzte Nachricht gesendet kleiner als 10 minuten)
+        // (letzte Nachricht gesendet grösser als 10 minuten = offline)
         async loadUsers() {
             try {
                 const userResponse = await axios.get("https://chat.ndum.ch/api/users");
@@ -176,7 +190,7 @@ export default {
                 this.users = users.map((user) => {
                     const lastActive = userStatusMap[user.username] || 0;
                     const status =
-                        now - lastActive < 10 * 60 * 1000 ? "online" : "offline";
+                        now - lastActive > 10 * 60 * 1000 ? "offline" : "online";
                     return { username: user.username, lastActive, status };
                 });
             } catch (error) {

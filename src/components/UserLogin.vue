@@ -41,9 +41,10 @@ export default {
                     password: this.password,
                 });
 
-                // Speichere das JWT-Token im LocalStorage
+                // Speichere das JWT-Token im LocalStorage und den User im Session Storage
                 const token = response.data.token;
                 localStorage.setItem("token", token);
+                sessionStorage.setItem("username", JSON.stringify(this.username));
 
                 // Weiterleitung zur Chat-Seite
                 this.$router.push("/chat");
@@ -51,6 +52,7 @@ export default {
                 this.errorMessage = "Login fehlgeschlagen. Bitte überprüfen Sie Ihre Eingaben.";
             }
         },
+        
         goToRegister() {
             this.$router.push("/register"); // Navigiert zur Registrierungsseite
         },

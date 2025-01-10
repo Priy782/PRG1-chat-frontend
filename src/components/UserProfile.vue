@@ -27,8 +27,8 @@
                     />
                 </div>
                 <div class="form-actions">
-                    <button type="submit">Änderungen speichern</button>
-                    <button type="button" @click="backToChat">Zurück zum Chat</button>
+                    <button type="submit">&Auml;nderungen speichern</button>
+                    <button type="button" @click="backToChat">Zur&uuml;ck zum Chat</button>
                 </div>
             </form>
             <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
